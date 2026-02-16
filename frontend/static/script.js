@@ -2,20 +2,14 @@
 const toastContainer = document.getElementById('toast-container');
 const toastQueue = [];
 let activeToasts = 0;
-const MAX_VISIBLE_TOASTS = 2;
-const TOAST_STAGGER_DELAY = 300; // 0.3s задержка между появлениями
+const MAX_VISIBLE_TOASTS = 6;
+const TOAST_STAGGER_DELAY = 300; 
 
-/**
- * Добавляет уведомление в очередь.
- */
 function showToast(message, type = 'default') {
     toastQueue.push({ message, type });
     processToastQueue();
 }
 
-/**
- * Обрабатывает очередь и показывает уведомления, если есть слоты.
- */
 function processToastQueue() {
     if (activeToasts >= MAX_VISIBLE_TOASTS || toastQueue.length === 0) {
         return;
@@ -26,8 +20,6 @@ function processToastQueue() {
 
     createToastElement(message, type);
 
-    // Если в очереди есть еще сообщения и есть свободные слоты,
-    // запускаем следующее с небольшой задержкой для красоты
     if (toastQueue.length > 0 && activeToasts < MAX_VISIBLE_TOASTS) {
         setTimeout(processToastQueue, TOAST_STAGGER_DELAY);
     }
@@ -36,36 +28,35 @@ function processToastQueue() {
 function createToastElement(message, type) {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    // Используем innerHTML, чтобы можно было выделять жирным (например, числа)
     toast.innerHTML = message; 
 
     toastContainer.appendChild(toast);
 
-    // Анимация появления
     requestAnimationFrame(() => {
         toast.classList.add('show');
     });
 
-    // Таймер жизни уведомления
     setTimeout(() => {
         removeToast(toast);
-    }, 4000); // Чуть увеличили время чтения до 4 сек
+    }, 4000); 
 }
 
 function removeToast(toast) {
-    // Если уже удаляется, игнорируем
     if (toast.classList.contains('removing')) return;
     
-    toast.classList.add('removing'); // Класс для анимации исчезновения (опционально)
+    // Запускаем CSS анимацию схлопывания
+    toast.classList.add('removing'); 
     toast.classList.remove('show');
 
+    // Ждем окончания CSS transition (0.4s), затем удаляем из DOM
     toast.addEventListener('transitionend', () => {
-        toast.remove();
-        activeToasts--;
-        // После удаления пробуем показать следующее из очереди
-        // Небольшая пауза, чтобы не "стреляло" мгновенно на место старого
-        setTimeout(processToastQueue, 200);
-    });
+        // Проверка нужна, чтобы не срабатывало на каждый transition property
+        if (toast.parentElement) {
+            toast.remove();
+            activeToasts--;
+            setTimeout(processToastQueue, 100);
+        }
+    }, { once: true }); // Важно: once: true, чтобы событие не дублировалось
 }
 
 // --- DRAG & DROP UI LOGIC ---
@@ -139,20 +130,16 @@ function handleFiles(fileList) {
         }
     });
 
-    // Сценарий 1: Пользователь скинул только мусор
     if (imageCount === 0) {
         showToast('Файлы данного формата не поддерживаются.<br>Пожалуйста, используйте изображения.', 'error');
         return;
     }
 
-    // Сценарий 2: Смешанный контент (Картинки + Мусор)
-    // Сначала предупреждаем о мусоре, потом грузим картинки
     if (invalidCount > 0) {
         const fileWord = invalidCount === 1 ? 'файл' : 'файла';
         showToast(`Пропущено ${invalidCount} ${fileWord} (неверный формат).`, 'error');
     }
 
-    // Отправка валидных изображений
     fetch('/upload', {
         method: 'POST',
         body: formData
@@ -160,7 +147,6 @@ function handleFiles(fileList) {
     .then(response => response.json())
     .then(data => {
         if (data.status === 'success') {
-            // Красивое сообщение с жирным шрифтом для числа
             showToast(`Успешно загружено: <b>${data.count}</b>`, 'success');
         } else {
             showToast(data.message || 'Ошибка обработки файлов', 'error');
