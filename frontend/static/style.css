@@ -1,6 +1,6 @@
 :root {
-    --bg-color: #1e1e1e; 
-    --text-color: #e0e0e0;
+    --bg-color: #121212; /* Deep dark background */
+    --text-color: #e0e0e0; /* Soft white */
     --accent-color: #3a3a3a;
     
     --success-color: rgba(46, 204, 113, 0.2);
@@ -94,7 +94,7 @@ h1.hidden {
     z-index: 1000;
     display: flex;
     flex-direction: column;
-    align-items: center; /* Центрируем сами тосты */
+    align-items: center; 
     pointer-events: none; 
 }
 
@@ -109,22 +109,34 @@ h1.hidden {
     -webkit-backdrop-filter: blur(12px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     
-    /* Отступ между тостами в стеке */
     margin-bottom: 10px; 
-
-    opacity: 0;
-    transform: translateY(-20px) scale(0.95); /* Чуть уменьшен при старте */
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    
-    display: flex;
-    align-items: center;
-    gap: 10px;
     border: 1px solid rgba(255,255,255,0.1);
+
+    /* Анимация появления */
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+    
+    /* Свойства для анимации схлопывания */
+    max-height: 100px; /* Достаточно для текста */
+    overflow: hidden;  /* Чтобы текст не вылезал при схлопывании */
+
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .toast.show {
     opacity: 1;
     transform: translateY(0) scale(1);
+}
+
+/* Анимация удаления: схлопываем высоту, паддинги и маржины в ноль */
+.toast.removing {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+    max-height: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-color: transparent; /* Убираем границу чтобы не мигала */
 }
 
 .toast.success {
