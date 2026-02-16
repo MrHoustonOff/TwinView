@@ -1,14 +1,19 @@
 :root {
-    --bg-color: #121212; /* Deep dark background */
-    --text-color: #e0e0e0; /* Soft white */
+    --bg-color: #121212;
+    --text-color: #e0e0e0;
     --accent-color: #3a3a3a;
+    --success-color: rgba(46, 204, 113, 0.2);
+    --success-border: #2ecc71;
+    --error-color: rgba(231, 76, 60, 0.2);
+    --error-border: #e74c3c;
+    --toast-bg: rgba(30, 30, 30, 0.85);
 }
 
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    user-select: none; /* Чтобы интерфейс ощущался как нативный */
+    user-select: none;
 }
 
 body, html {
@@ -16,11 +21,10 @@ body, html {
     height: 100%;
     background-color: var(--bg-color);
     color: var(--text-color);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    overflow: hidden; /* Никаких скроллбаров у основного окна */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow: hidden;
 }
 
-/* Главный контейнер приложения */
 .app-container {
     display: flex;
     flex-direction: column;
@@ -28,10 +32,98 @@ body, html {
     width: 100vw;
     align-items: center;
     justify-content: center;
+    position: relative;
+    z-index: 1;
 }
 
 h1 {
     font-weight: 300;
     letter-spacing: 2px;
-    opacity: 0.5;
+    opacity: 0.3;
+    transition: opacity 0.3s;
+}
+
+/* --- DRAG & DROP OVERLAY --- */
+.drag-overlay {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
+    border: 2px dashed #666;
+    border-radius: 12px;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* Скрыт по умолчанию */
+    opacity: 0; 
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    transform: scale(0.98);
+}
+
+.drag-overlay.active {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: all;
+}
+
+.drag-overlay span {
+    font-size: 1.5rem;
+    color: #fff;
+    font-weight: 300;
+    pointer-events: none;
+}
+
+/* --- TOAST NOTIFICATIONS --- */
+.toast-container {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none; /* Пропускаем клики сквозь контейнер */
+}
+
+.toast {
+    background: var(--toast-bg);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 50px; /* Pill shape */
+    font-size: 14px;
+    font-weight: 400;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Цветовые модификаторы */
+.toast.success {
+    border-color: var(--success-border);
+    background: linear-gradient(to right, var(--toast-bg), var(--success-color));
+}
+
+.toast.error {
+    border-color: var(--error-border);
+    background: linear-gradient(to right, var(--toast-bg), var(--error-color));
 }
