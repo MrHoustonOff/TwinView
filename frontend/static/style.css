@@ -2,13 +2,14 @@
     --bg-color: #121212; /* Deep dark background */
     --text-color: #e0e0e0; /* Soft white */
     --accent-color: #3a3a3a;
+ --sidebar-bg: rgba(30, 30, 30, 0.6);
+    --sidebar-width: 280px;
+    --item-hover: rgba(255, 255, 255, 0.05);
     
     --success-color: rgba(46, 204, 113, 0.2);
     --success-border: #2ecc71;
-    
     --error-color: rgba(231, 76, 60, 0.2);
     --error-border: #e74c3c;
-    
     --toast-bg: rgba(35, 35, 35, 0.95);
 }
 
@@ -30,121 +31,181 @@ body, html {
 
 .app-container {
     display: flex;
-    flex-direction: column;
+    flex-direction: row; /* Меняем на row, чтобы сайдбар был слева */
     height: 100vh;
     width: 100vw;
+}
+
+/* --- SIDEBAR --- */
+.sidebar {
+    width: var(--sidebar-width);
+    height: 100%;
+    background-color: var(--sidebar-bg);
+    backdrop-filter: blur(10px);
+    border-right: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    z-index: 10;
+    flex-shrink: 0;
+}
+
+.sidebar h2 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.scene-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Скроллбар для списка */
+.scene-list::-webkit-scrollbar {
+    width: 4px;
+}
+.scene-list::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 2px;
+}
+
+/* --- SCENE ITEM --- */
+.scene-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 8px;
+    transition: background 0.2s;
+    gap: 10px;
+}
+
+.scene-item:hover {
+    background: var(--item-hover);
+}
+
+.thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    object-fit: cover;
+    background: #000;
+}
+
+.file-info {
+    flex: 1;
+    overflow: hidden;
+}
+
+.filename {
+    font-size: 13px;
+    color: #ddd;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* --- IOS TOGGLE SWITCH --- */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.switch input { 
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #555;
+    transition: .3s;
+    border-radius: 20px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--success-border);
+}
+
+input:checked + .slider:before {
+    transform: translateX(16px);
+}
+
+/* --- MAIN AREA (VIEWPORT PLACEHOLDER) --- */
+.viewport-area {
+    flex: 1;
+    display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    z-index: 1;
+    background: radial-gradient(circle at center, #252525 0%, #1e1e1e 100%);
 }
 
-h1 {
+h1.placeholder {
     font-weight: 300;
     letter-spacing: 2px;
-    opacity: 0.3;
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    opacity: 0.1;
+    font-size: 3rem;
 }
 
-h1.hidden {
-    opacity: 0;
-    transform: scale(0.9);
-}
+/* --- UTILS --- */
+.hidden { opacity: 0; pointer-events: none; }
 
-/* --- DRAG OVERLAY --- */
 .drag-overlay {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    right: 20px;
-    bottom: 20px;
-    border: 2px dashed #666;
-    border-radius: 12px;
-    background-color: rgba(0, 0, 0, 0.8);
-    z-index: 999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    
-    opacity: 0; 
-    pointer-events: none;
-    transition: opacity 0.2s ease, transform 0.2s ease;
-    transform: scale(0.98);
+    position: fixed; top: 20px; left: 20px; right: 20px; bottom: 20px;
+    border: 2px dashed #666; border-radius: 12px;
+    background-color: rgba(0, 0, 0, 0.8); z-index: 999;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease; transform: scale(0.98);
 }
+.drag-overlay.active { opacity: 1; transform: scale(1); pointer-events: all; }
+.drag-overlay span { font-size: 1.5rem; color: #fff; font-weight: 300; }
 
-.drag-overlay.active {
-    opacity: 1;
-    transform: scale(1);
-    pointer-events: all;
-}
-
-.drag-overlay span {
-    font-size: 1.5rem;
-    color: #fff;
-    font-weight: 300;
-    pointer-events: none;
-}
-
-/* --- TOAST NOTIFICATIONS --- */
 .toast-container {
-    position: fixed;
-    top: 30px; 
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    align-items: center; 
-    pointer-events: none; 
+    position: fixed; top: 30px; left: 50%; transform: translateX(-50%);
+    z-index: 1000; display: flex; flex-direction: column; align-items: center; pointer-events: none; 
 }
-
 .toast {
-    background: var(--toast-bg);
-    color: #fff;
-    padding: 12px 24px;
-    border-radius: 50px;
-    font-size: 14px;
-    font-weight: 400;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: var(--toast-bg); color: #fff; padding: 12px 24px;
+    border-radius: 50px; font-size: 14px; font-weight: 400;
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    
-    margin-bottom: 10px; 
-    border: 1px solid rgba(255,255,255,0.1);
-
-    /* Анимация появления */
-    opacity: 0;
-    transform: translateY(-20px) scale(0.95);
-    
-    /* Свойства для анимации схлопывания */
-    max-height: 100px; /* Достаточно для текста */
-    overflow: hidden;  /* Чтобы текст не вылезал при схлопывании */
-
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.1);
+    opacity: 0; transform: translateY(-20px) scale(0.95);
+    max-height: 100px; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
-.toast.show {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-}
-
-/* Анимация удаления: схлопываем высоту, паддинги и маржины в ноль */
+.toast.show { opacity: 1; transform: translateY(0) scale(1); }
 .toast.removing {
-    opacity: 0;
-    transform: translateY(-10px) scale(0.95);
-    max-height: 0;
-    margin-bottom: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    border-color: transparent; /* Убираем границу чтобы не мигала */
+    opacity: 0; transform: translateY(-10px) scale(0.95); max-height: 0; margin-bottom: 0;
+    padding-top: 0; padding-bottom: 0; border-color: transparent;
 }
-
-.toast.success {
-    border-color: var(--success-border);
-    background: linear-gradient(to right, var(--toast-bg), var(--success-color));
-}
-
-.toast.error {
-    border-color: var(--error-border);
-    background: linear-gradient(to right, var(--toast-bg), var(--error-color));
-}
+.toast.success { border-color: var(--success-border); background: linear-gradient(to right, var(--toast-bg), var(--success-color)); }
+.toast.error { border-color: var(--error-border); background: linear-gradient(to right, var(--toast-bg), var(--error-color)); }
