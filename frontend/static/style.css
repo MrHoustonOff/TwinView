@@ -1,12 +1,16 @@
 :root {
-    --bg-color: #121212;
+    /* TWEAK 2: Чуть светлее фон (Soft Dark Graphite) */
+    --bg-color: #1e1e1e; 
     --text-color: #e0e0e0;
     --accent-color: #3a3a3a;
+    
     --success-color: rgba(46, 204, 113, 0.2);
     --success-border: #2ecc71;
+    
     --error-color: rgba(231, 76, 60, 0.2);
     --error-border: #e74c3c;
-    --toast-bg: rgba(30, 30, 30, 0.85);
+    
+    --toast-bg: rgba(35, 35, 35, 0.95); /* Чуть плотнее фон тоста */
 }
 
 * {
@@ -40,7 +44,14 @@ h1 {
     font-weight: 300;
     letter-spacing: 2px;
     opacity: 0.3;
-    transition: opacity 0.3s;
+    /* TWEAK 1: Плавное исчезновение заголовка */
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Класс для скрытия заголовка при драге */
+h1.hidden {
+    opacity: 0;
+    transform: scale(0.9);
 }
 
 /* --- DRAG & DROP OVERLAY --- */
@@ -52,13 +63,12 @@ h1 {
     bottom: 20px;
     border: 2px dashed #666;
     border-radius: 12px;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.8); /* Чуть темнее оверлей */
     z-index: 999;
     display: flex;
     align-items: center;
     justify-content: center;
     
-    /* Скрыт по умолчанию */
     opacity: 0; 
     pointer-events: none;
     transition: opacity 0.2s ease, transform 0.2s ease;
@@ -78,24 +88,25 @@ h1 {
     pointer-events: none;
 }
 
-/* --- TOAST NOTIFICATIONS --- */
+/* --- TOAST NOTIFICATIONS (TOP) --- */
 .toast-container {
     position: fixed;
-    bottom: 30px;
+    /* TWEAK 3: Теперь сверху */
+    top: 30px; 
     left: 50%;
     transform: translateX(-50%);
     z-index: 1000;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    pointer-events: none; /* Пропускаем клики сквозь контейнер */
+    pointer-events: none; 
 }
 
 .toast {
     background: var(--toast-bg);
     color: #fff;
     padding: 12px 24px;
-    border-radius: 50px; /* Pill shape */
+    border-radius: 50px;
     font-size: 14px;
     font-weight: 400;
     backdrop-filter: blur(12px);
@@ -103,7 +114,8 @@ h1 {
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     
     opacity: 0;
-    transform: translateY(20px);
+    /* Анимация падения сверху */
+    transform: translateY(-20px); 
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     
     display: flex;
@@ -117,7 +129,6 @@ h1 {
     transform: translateY(0);
 }
 
-/* Цветовые модификаторы */
 .toast.success {
     border-color: var(--success-border);
     background: linear-gradient(to right, var(--toast-bg), var(--success-color));
