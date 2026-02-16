@@ -1,5 +1,4 @@
 :root {
-    /* TWEAK 2: Чуть светлее фон (Soft Dark Graphite) */
     --bg-color: #1e1e1e; 
     --text-color: #e0e0e0;
     --accent-color: #3a3a3a;
@@ -10,7 +9,7 @@
     --error-color: rgba(231, 76, 60, 0.2);
     --error-border: #e74c3c;
     
-    --toast-bg: rgba(35, 35, 35, 0.95); /* Чуть плотнее фон тоста */
+    --toast-bg: rgba(35, 35, 35, 0.95);
 }
 
 * {
@@ -44,17 +43,15 @@ h1 {
     font-weight: 300;
     letter-spacing: 2px;
     opacity: 0.3;
-    /* TWEAK 1: Плавное исчезновение заголовка */
     transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-/* Класс для скрытия заголовка при драге */
 h1.hidden {
     opacity: 0;
     transform: scale(0.9);
 }
 
-/* --- DRAG & DROP OVERLAY --- */
+/* --- DRAG OVERLAY --- */
 .drag-overlay {
     position: fixed;
     top: 20px;
@@ -63,7 +60,7 @@ h1.hidden {
     bottom: 20px;
     border: 2px dashed #666;
     border-radius: 12px;
-    background-color: rgba(0, 0, 0, 0.8); /* Чуть темнее оверлей */
+    background-color: rgba(0, 0, 0, 0.8);
     z-index: 999;
     display: flex;
     align-items: center;
@@ -88,17 +85,16 @@ h1.hidden {
     pointer-events: none;
 }
 
-/* --- TOAST NOTIFICATIONS (TOP) --- */
+/* --- TOAST NOTIFICATIONS --- */
 .toast-container {
     position: fixed;
-    /* TWEAK 3: Теперь сверху */
     top: 30px; 
     left: 50%;
     transform: translateX(-50%);
     z-index: 1000;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    align-items: center; /* Центрируем сами тосты */
     pointer-events: none; 
 }
 
@@ -113,9 +109,11 @@ h1.hidden {
     -webkit-backdrop-filter: blur(12px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     
+    /* Отступ между тостами в стеке */
+    margin-bottom: 10px; 
+
     opacity: 0;
-    /* Анимация падения сверху */
-    transform: translateY(-20px); 
+    transform: translateY(-20px) scale(0.95); /* Чуть уменьшен при старте */
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     
     display: flex;
@@ -126,7 +124,7 @@ h1.hidden {
 
 .toast.show {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
 }
 
 .toast.success {
