@@ -6,14 +6,13 @@ function showToast(message, type = 'default') {
     toast.className = `toast ${type}`;
     toast.innerText = message;
     
+    // Добавляем в конец списка (они будут выстраиваться сверху вниз)
     toastContainer.appendChild(toast);
 
-    // Trigger reflow для анимации
     requestAnimationFrame(() => {
         toast.classList.add('show');
     });
 
-    // Удаление через 3 секунды
     setTimeout(() => {
         toast.classList.remove('show');
         toast.addEventListener('transitionend', () => {
@@ -24,12 +23,18 @@ function showToast(message, type = 'default') {
 
 // --- DRAG & DROP LOGIC ---
 const dragOverlay = document.getElementById('drag-overlay');
-let dragCounter = 0; // Счетчик, чтобы не мигал оверлей при наведении на детей
+// Находим заголовок, чтобы прятать его
+const mainTitle = document.querySelector('h1'); 
+
+let dragCounter = 0;
 
 document.addEventListener('dragenter', (e) => {
     e.preventDefault();
     dragCounter++;
     dragOverlay.classList.add('active');
+    
+    // TWEAK 1: Прячем заголовок
+    if (mainTitle) mainTitle.classList.add('hidden');
 });
 
 document.addEventListener('dragleave', (e) => {
@@ -37,6 +42,9 @@ document.addEventListener('dragleave', (e) => {
     dragCounter--;
     if (dragCounter === 0) {
         dragOverlay.classList.remove('active');
+        
+        // TWEAK 1: Возвращаем заголовок
+        if (mainTitle) mainTitle.classList.remove('hidden');
     }
 });
 
@@ -48,6 +56,8 @@ document.addEventListener('drop', (e) => {
     e.preventDefault();
     dragCounter = 0;
     dragOverlay.classList.remove('active');
+    // Возвращаем заголовок при дропе
+    if (mainTitle) mainTitle.classList.remove('hidden');
     
     const files = e.dataTransfer.files;
     handleFiles(files);
@@ -67,11 +77,6 @@ document.addEventListener('paste', (e) => {
 
     if (files.length > 0) {
         handleFiles(files);
-    } else {
-        // Если в буфере нет картинок
-        // showToast('В буфере обмена нет изображений', 'error'); 
-        // Пока молчим, чтобы не бесить при копировании текста, 
-        // но можно раскомментировать, если нужно строгое поведение.
     }
 });
 
@@ -81,7 +86,6 @@ function handleFiles(fileList) {
     let imageCount = 0;
     let hasNonImage = false;
 
-    // Превращаем FileList или Array в массив для перебора
     const files = Array.from(fileList);
 
     if (files.length === 0) return;
@@ -96,15 +100,14 @@ function handleFiles(fileList) {
     });
 
     if (hasNonImage) {
-        showToast('Некоторые файлы не являются изображениями', 'error');
+        showToast('Только изображения!', 'error');
     }
 
     if (imageCount === 0) {
-        showToast('Ошибка: нет изображений для загрузки', 'error');
+        showToast('Ошибка: нет изображений', 'error');
         return;
     }
 
-    // Отправка на сервер
     fetch('/upload', {
         method: 'POST',
         body: formData
@@ -112,14 +115,13 @@ function handleFiles(fileList) {
     .then(response => response.json())
     .then(data => {
         if (data.status === 'success') {
-            showToast(`Успешно загружено: ${data.count}`, 'success');
-            console.log('Server response:', data);
+            showToast(`Загружено: ${data.count}`, 'success');
         } else {
             showToast(data.message, 'error');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showToast('Ошибка соединения с сервером', 'error');
+        showToast('Ошибка соединения', 'error');
     });
 }
