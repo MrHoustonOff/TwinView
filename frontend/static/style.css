@@ -260,3 +260,65 @@ h1.placeholder {
 .btn-clean:active {
     transform: scale(0.98);
 }
+
+/* --- VIEWPORT AREA --- */
+.viewport-area {
+    flex: 1;
+    height: 100%;
+    position: relative;
+    background: #121212; /* Глубокий черный для контраста с фото */
+    overflow: hidden; /* Скролл будет внутри сетки */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Сетка отображения */
+.viewport-grid {
+    flex: 1;
+    overflow-y: auto; /* Скролл только если картинки не влезают */
+    padding: 20px;
+    
+    display: grid;
+    /* Магия CSS Grid: адаптивные колонки мин. шириной 300px */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    align-content: start; /* Чтобы при малом кол-ве фото они были сверху, а не растянуты по вертикали */
+}
+
+/* Карточка изображения во вьюпорте */
+.vp-image-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* Высота карточки (можно фиксировать или делать резиновой) */
+    /* Пока сделаем адаптивную высоту, чтобы фото влезали красиво */
+    height: 300px; 
+    position: relative;
+}
+
+.vp-image-card img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; /* Сохраняем пропорции, не обрезаем */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    border-radius: 4px;
+}
+
+/* Лейбл с именем файла (опционально, для удобства) */
+.vp-image-label {
+    position: absolute;
+    bottom: 5px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    pointer-events: none;
+    backdrop-filter: blur(4px);
+}
