@@ -64,15 +64,29 @@ body, html {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    padding-right: 5px;
+    
+    /* Запрещаем резинке дергать все окно */
+    overscroll-behavior: contain;
 }
 
-/* Скроллбар для списка */
+/* Возвращаем красивый скроллбар */
 .scene-list::-webkit-scrollbar {
-    width: 4px;
+    width: 6px; /* Чуть шире чем 4px для удобства, но все равно тонкий */
 }
+
+.scene-list::-webkit-scrollbar-track {
+    background: transparent; 
+}
+
 .scene-list::-webkit-scrollbar-thumb {
-    background: #444;
-    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.scene-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
 }
 
 /* --- SCENE ITEM --- */
@@ -82,8 +96,13 @@ body, html {
     padding: 8px 10px;
     background: rgba(255,255,255,0.02);
     border-radius: 8px;
-    transition: background 0.2s;
+    transition: background 0.1s ease;
     gap: 10px;
+    
+    /* ОПТИМИЗАЦИЯ: Браузер не рендерит контент элемента, если он вне экрана */
+    /* Это дает огромный буст при длинных списках */
+    content-visibility: auto; 
+    contain-intrinsic-size: 56px; 
 }
 
 .scene-item:hover {
