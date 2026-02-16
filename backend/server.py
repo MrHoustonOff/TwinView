@@ -84,5 +84,21 @@ def toggle_image(file_id):
         return jsonify({'status': 'success', 'active': IMAGES_DB[file_id]['active']})
     return jsonify({'status': 'error'}), 404
 
+@server.route('/delete_deactivated', methods=['POST'])
+def delete_deactivated():
+    """Удаляет все изображения, у которых active = False"""
+    deleted_count = 0
+    # Создаем список ключей, чтобы можно было удалять во время итерации
+    for img_id in list(IMAGES_DB.keys()):
+        if not IMAGES_DB[img_id]['active']:
+            del IMAGES_DB[img_id]
+            deleted_count += 1
+            
+    return jsonify({
+        'status': 'success', 
+        'message': f'Удалено файлов: {deleted_count}',
+        'count': deleted_count
+    })
+    
 if __name__ == '__main__':
     server.run(debug=True, port=5000)

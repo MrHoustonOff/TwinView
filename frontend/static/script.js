@@ -1,8 +1,88 @@
-// --- SMART NOTIFICATION SYSTEM ---
+// --- DOM ELEMENTS ---
+const sceneListEl = document.getElementById('scene-list');
 const toastContainer = document.getElementById('toast-container');
+const dragOverlay = document.getElementById('drag-overlay');
+const btnClean = document.getElementById('btn-clean');
+
+// --- INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', () => {
+    updateSceneList();
+});
+
+// --- SCENE LIST LOGIC ---
+function updateSceneList() {
+    fetch('/images')
+        .then(res => res.json())
+        .then(data => {
+            renderList(data.images);
+        })
+        .catch(err => console.error('Error fetching images:', err));
+}
+
+function renderList(images) {
+    sceneListEl.innerHTML = ''; 
+
+    // Отображаем новые сверху (reverse)
+    const sortedImages = images.reverse();
+
+    sortedImages.forEach(img => {
+        const item = document.createElement('div');
+        item.className = 'scene-item';
+        
+        item.innerHTML = `
+            <img src="/image/${img.id}" class="thumb" alt="thumb">
+            <div class="file-info">
+                <div class="filename" title="${img.filename}">${img.filename}</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" ${img.active ? 'checked' : ''}>
+                <span class="slider"></span>
+            </label>
+        `;
+
+        // Слушаем переключение тоггла
+        const toggle = item.querySelector('input');
+        toggle.addEventListener('change', (e) => {
+            toggleImageState(img.id, e.target.checked);
+        });
+
+        sceneListEl.appendChild(item);
+    });
+}
+
+function toggleImageState(id, isActive) {
+    fetch(`/toggle/${id}`, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            // Логируем или обновляем UI если нужно
+             console.log(`Image ${id} active: ${data.active}`);
+        });
+}
+
+// --- CLEANUP LOGIC (DELETE INACTIVE) ---
+if (btnClean) {
+    btnClean.addEventListener('click', () => {
+        fetch('/delete_deactivated', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success' && data.count > 0) {
+                    showToast(`Удалено файлов: <b>${data.count}</b>`, 'success');
+                    updateSceneList(); // Перерисовываем список
+                } else {
+                    showToast('Нет отключенных изображений', 'default');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('Ошибка при удалении', 'error');
+            });
+    });
+}
+
+// --- SMART TOAST SYSTEM ---
 const toastQueue = [];
 let activeToasts = 0;
-const MAX_VISIBLE_TOASTS = 6;
+const MAX_VISIBLE_TOASTS = 8;
 const TOAST_STAGGER_DELAY = 300; 
 
 function showToast(message, type = 'default') {
@@ -11,9 +91,7 @@ function showToast(message, type = 'default') {
 }
 
 function processToastQueue() {
-    if (activeToasts >= MAX_VISIBLE_TOASTS || toastQueue.length === 0) {
-        return;
-    }
+    if (activeToasts >= MAX_VISIBLE_TOASTS || toastQueue.length === 0) return;
 
     const { message, type } = toastQueue.shift();
     activeToasts++;
@@ -29,46 +107,35 @@ function createToastElement(message, type) {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     toast.innerHTML = message; 
-
     toastContainer.appendChild(toast);
 
-    requestAnimationFrame(() => {
-        toast.classList.add('show');
-    });
+    requestAnimationFrame(() => toast.classList.add('show'));
 
-    setTimeout(() => {
-        removeToast(toast);
-    }, 4000); 
+    setTimeout(() => removeToast(toast), 4000); 
 }
 
 function removeToast(toast) {
     if (toast.classList.contains('removing')) return;
     
-    // Запускаем CSS анимацию схлопывания
     toast.classList.add('removing'); 
     toast.classList.remove('show');
 
-    // Ждем окончания CSS transition (0.4s), затем удаляем из DOM
     toast.addEventListener('transitionend', () => {
-        // Проверка нужна, чтобы не срабатывало на каждый transition property
         if (toast.parentElement) {
             toast.remove();
             activeToasts--;
             setTimeout(processToastQueue, 100);
         }
-    }, { once: true }); // Важно: once: true, чтобы событие не дублировалось
+    }, { once: true });
 }
 
 // --- DRAG & DROP UI LOGIC ---
-const dragOverlay = document.getElementById('drag-overlay');
-const mainTitle = document.querySelector('h1'); 
 let dragCounter = 0;
 
 document.addEventListener('dragenter', (e) => {
     e.preventDefault();
     dragCounter++;
     dragOverlay.classList.add('active');
-    if (mainTitle) mainTitle.classList.add('hidden');
 });
 
 document.addEventListener('dragleave', (e) => {
@@ -76,46 +143,36 @@ document.addEventListener('dragleave', (e) => {
     dragCounter--;
     if (dragCounter === 0) {
         dragOverlay.classList.remove('active');
-        if (mainTitle) mainTitle.classList.remove('hidden');
     }
 });
 
-document.addEventListener('dragover', (e) => {
-    e.preventDefault();
-});
+document.addEventListener('dragover', (e) => { e.preventDefault(); });
 
 document.addEventListener('drop', (e) => {
     e.preventDefault();
     dragCounter = 0;
     dragOverlay.classList.remove('active');
-    if (mainTitle) mainTitle.classList.remove('hidden');
     
     const files = e.dataTransfer.files;
     handleFiles(files);
 });
 
-// --- CLIPBOARD PASTE LOGIC ---
+// --- PASTE LOGIC ---
 document.addEventListener('paste', (e) => {
     const items = (e.clipboardData || e.originalEvent.clipboardData).items;
     const files = [];
-    
     for (let item of items) {
         if (item.kind === 'file' && item.type.startsWith('image/')) {
-            const blob = item.getAsFile();
-            files.push(blob);
+            files.push(item.getAsFile());
         }
     }
-
-    if (files.length > 0) {
-        handleFiles(files);
-    }
+    if (files.length > 0) handleFiles(files);
 });
 
-// --- SMART FILE HANDLING ---
+// --- FILE HANDLING ---
 function handleFiles(fileList) {
     const formData = new FormData();
     const files = Array.from(fileList);
-    
     if (files.length === 0) return;
 
     let imageCount = 0;
@@ -131,13 +188,11 @@ function handleFiles(fileList) {
     });
 
     if (imageCount === 0) {
-        showToast('Файлы данного формата не поддерживаются.<br>Пожалуйста, используйте изображения.', 'error');
+        showToast('Файлы данного формата не поддерживаются', 'error');
         return;
     }
-
     if (invalidCount > 0) {
-        const fileWord = invalidCount === 1 ? 'файл' : 'файла';
-        showToast(`Пропущено ${invalidCount} ${fileWord} (неверный формат).`, 'error');
+        showToast(`Пропущено файлов: ${invalidCount}`, 'error');
     }
 
     fetch('/upload', {
@@ -147,13 +202,14 @@ function handleFiles(fileList) {
     .then(response => response.json())
     .then(data => {
         if (data.status === 'success') {
-            showToast(`Успешно загружено: <b>${data.count}</b>`, 'success');
+            showToast(`Загружено: <b>${data.count}</b>`, 'success');
+            updateSceneList(); // Обновляем список после успешной загрузки
         } else {
-            showToast(data.message || 'Ошибка обработки файлов', 'error');
+            showToast(data.message, 'error');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showToast('Не удалось соединиться с сервером.', 'error');
+        showToast('Ошибка соединения', 'error');
     });
 }

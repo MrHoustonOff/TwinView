@@ -209,3 +209,35 @@ h1.placeholder {
 }
 .toast.success { border-color: var(--success-border); background: linear-gradient(to right, var(--toast-bg), var(--success-color)); }
 .toast.error { border-color: var(--error-border); background: linear-gradient(to right, var(--toast-bg), var(--error-color)); }
+
+/* --- SIDEBAR FOOTER --- */
+.sidebar-footer {
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin-top: 10px;
+}
+
+.btn-clean {
+    width: 100%;
+    background: transparent;
+    color: #666;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.btn-clean:hover {
+    background: rgba(231, 76, 60, 0.1);
+    border-color: rgba(231, 76, 60, 0.4);
+    color: #e74c3c; /* Красный текст при наведении */
+}
+
+.btn-clean:active {
+    transform: scale(0.98);
+}
