@@ -2,12 +2,13 @@ import uuid
 import io
 import mimetypes
 from flask import Flask, render_template, request, jsonify, send_file
+from PIL import Image  # НОВАЯ ЗАВИСИМОСТЬ
 
 server = Flask(__name__, 
                static_folder='../frontend/static',
                template_folder='../frontend/templates')
 
-# Хранилище: { 'uuid': { 'filename': '...', 'data': bytes, 'active': True } }
+# Хранилище: { 'uuid': { 'filename': '...', 'data': bytes, 'thumb': bytes, 'active': True } }
 IMAGES_DB = {}
 
 @server.route('/')
@@ -26,22 +27,47 @@ def upload_file():
     
     for file in files:
         if file.filename == '': continue
-        if not file.filename.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.bmp')):
+        if not file.filename.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.bmp', '.tga', '.tiff')):
             continue
 
         file_id = str(uuid.uuid4())
         file_data = file.read()
         
+        # --- ГЕНЕРАЦИЯ МИНИАТЮРЫ ---
+        try:
+            # Открываем из байтов
+            img = Image.open(io.BytesIO(file_data))
+            
+            # Конвертируем в RGB если это CMYK или RGBA (для JPEG сохранения)
+            if img.mode in ('RGBA', 'P'): 
+                img = img.convert('RGBA')
+            
+            # Делаем тамбнейл (макс 128x128)
+            img.thumbnail((128, 128))
+            
+            # Сохраняем миниатюру в байты
+            thumb_io = io.BytesIO()
+            # Сохраняем как PNG для поддержки прозрачности или JPEG для скорости
+            # Используем PNG для универсальности иконок
+            img.save(thumb_io, format='PNG', optimize=True)
+            thumb_data = thumb_io.getvalue()
+            
+        except Exception as e:
+            print(f"Error creating thumbnail for {file.filename}: {e}")
+            # Если сломалось создание миниатюры, используем оригинал (fallback)
+            thumb_data = file_data
+
         IMAGES_DB[file_id] = {
             'id': file_id,
             'filename': file.filename,
-            'data': file_data,
-            'active': True # По дефолту видно
+            'data': file_data,      # ОРИГИНАЛ (Heavy)
+            'thumb': thumb_data,    # МИНИАТЮРА (Light)
+            'active': True
         }
         uploaded_count += 1
 
     if uploaded_count == 0:
-        return jsonify({'status': 'error', 'message': 'Ни один файл не является изображением'}), 400
+        return jsonify({'status': 'error', 'message': 'Ни один файл не загружен'}), 400
 
     return jsonify({
         'status': 'success', 
@@ -50,7 +76,6 @@ def upload_file():
 
 @server.route('/images', methods=['GET'])
 def get_images_list():
-    """Возвращает список метаданных (без самих байтов)"""
     images_list = []
     for img_id, img_data in IMAGES_DB.items():
         images_list.append({
@@ -62,23 +87,30 @@ def get_images_list():
 
 @server.route('/image/<file_id>')
 def get_image(file_id):
-    """Отдает сырые байты картинки по ID"""
-    if file_id not in IMAGES_DB:
-        return "Not found", 404
+    """Отдает ОРИГИНАЛ (для вьюпорта)"""
+    if file_id not in IMAGES_DB: return "Not found", 404
     
     img_entry = IMAGES_DB[file_id]
     img_io = io.BytesIO(img_entry['data'])
     
-    # Определяем mime-type по имени файла
     mime_type, _ = mimetypes.guess_type(img_entry['filename'])
-    if not mime_type:
-        mime_type = 'application/octet-stream'
+    if not mime_type: mime_type = 'application/octet-stream'
         
     return send_file(img_io, mimetype=mime_type)
 
+@server.route('/thumbnail/<file_id>')
+def get_thumbnail(file_id):
+    """Отдает МИНИАТЮРУ (для сайдбара)"""
+    if file_id not in IMAGES_DB: return "Not found", 404
+    
+    img_entry = IMAGES_DB[file_id]
+    # Берем подготовленные маленькие данные
+    img_io = io.BytesIO(img_entry['thumb'])
+    
+    return send_file(img_io, mimetype='image/png')
+
 @server.route('/toggle/<file_id>', methods=['POST'])
 def toggle_image(file_id):
-    """Переключает статус видимости"""
     if file_id in IMAGES_DB:
         IMAGES_DB[file_id]['active'] = not IMAGES_DB[file_id]['active']
         return jsonify({'status': 'success', 'active': IMAGES_DB[file_id]['active']})
@@ -86,19 +118,13 @@ def toggle_image(file_id):
 
 @server.route('/delete_deactivated', methods=['POST'])
 def delete_deactivated():
-    """Удаляет все изображения, у которых active = False"""
     deleted_count = 0
-    # Создаем список ключей, чтобы можно было удалять во время итерации
     for img_id in list(IMAGES_DB.keys()):
         if not IMAGES_DB[img_id]['active']:
             del IMAGES_DB[img_id]
             deleted_count += 1
             
-    return jsonify({
-        'status': 'success', 
-        'message': f'Удалено файлов: {deleted_count}',
-        'count': deleted_count
-    })
-    
+    return jsonify({'status': 'success', 'count': deleted_count})
+
 if __name__ == '__main__':
     server.run(debug=True, port=5000)
