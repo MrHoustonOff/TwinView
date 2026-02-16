@@ -22,15 +22,15 @@ function updateSceneList() {
 function renderList(images) {
     sceneListEl.innerHTML = ''; 
 
-    // Отображаем новые сверху (reverse)
     const sortedImages = images.reverse();
 
     sortedImages.forEach(img => {
         const item = document.createElement('div');
         item.className = 'scene-item';
         
+        // ВАЖНО: ТЕПЕРЬ ГРУЗИМ /thumbnail/ ВМЕСТО /image/
         item.innerHTML = `
-            <img src="/image/${img.id}" class="thumb" alt="thumb">
+            <img src="/thumbnail/${img.id}" class="thumb" alt="thumb">
             <div class="file-info">
                 <div class="filename" title="${img.filename}">${img.filename}</div>
             </div>
@@ -40,7 +40,6 @@ function renderList(images) {
             </label>
         `;
 
-        // Слушаем переключение тоггла
         const toggle = item.querySelector('input');
         toggle.addEventListener('change', (e) => {
             toggleImageState(img.id, e.target.checked);
