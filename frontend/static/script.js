@@ -1,5 +1,5 @@
-// --- DOM ELEMENTS ---
 const sceneListEl = document.getElementById('scene-list');
+const viewportGridEl = document.getElementById('viewport-grid'); // НОВЫЙ ЭЛЕМЕНТ
 const toastContainer = document.getElementById('toast-container');
 const dragOverlay = document.getElementById('drag-overlay');
 const btnClean = document.getElementById('btn-clean');
@@ -9,26 +9,27 @@ document.addEventListener('DOMContentLoaded', () => {
     updateSceneList();
 });
 
-// --- SCENE LIST LOGIC ---
+// --- CORE LOGIC ---
 function updateSceneList() {
     fetch('/images')
         .then(res => res.json())
         .then(data => {
-            renderList(data.images);
+            const images = data.images; // Получаем список
+            renderList(images);         // Рисуем сайдбар
+            updateViewport(images);     // Рисуем центр (НОВОЕ)
         })
         .catch(err => console.error('Error fetching images:', err));
 }
 
+// Рендер сайдбара (как и был)
 function renderList(images) {
     sceneListEl.innerHTML = ''; 
-
-    const sortedImages = images.reverse();
+    const sortedImages = [...images].reverse(); // Копия массива для реверса
 
     sortedImages.forEach(img => {
         const item = document.createElement('div');
         item.className = 'scene-item';
         
-        // ВАЖНО: ТЕПЕРЬ ГРУЗИМ /thumbnail/ ВМЕСТО /image/
         item.innerHTML = `
             <img src="/thumbnail/${img.id}" class="thumb" alt="thumb">
             <div class="file-info">
@@ -49,12 +50,43 @@ function renderList(images) {
     });
 }
 
+// Рендер Вьюпорта (НОВАЯ ФУНКЦИЯ)
+function updateViewport(images) {
+    viewportGridEl.innerHTML = '';
+
+    // Фильтруем: показываем только active
+    const activeImages = images.filter(img => img.active);
+
+    if (activeImages.length === 0) {
+        // Если ничего не выбрано, показываем заглушку
+        viewportGridEl.innerHTML = '<div style="color: #444; margin: auto;">No active images</div>';
+        viewportGridEl.style.display = 'flex'; // Чтобы заглушка была по центру
+        return;
+    } else {
+        viewportGridEl.style.display = 'grid'; // Возвращаем грид
+    }
+
+    activeImages.forEach(img => {
+        const card = document.createElement('div');
+        card.className = 'vp-image-card';
+        
+        // ВАЖНО: Во вьюпорте грузим ОРИГИНАЛ (/image/), чтобы видеть детали
+        card.innerHTML = `
+            <img src="/image/${img.id}" alt="${img.filename}">
+            <div class="vp-image-label">${img.filename}</div>
+        `;
+        
+        viewportGridEl.appendChild(card);
+    });
+}
+
 function toggleImageState(id, isActive) {
     fetch(`/toggle/${id}`, { method: 'POST' })
         .then(res => res.json())
         .then(data => {
-            // Логируем или обновляем UI если нужно
-             console.log(`Image ${id} active: ${data.active}`);
+            // После переключения просто обновляем всё состояние
+            // Это самый надежный способ синхронизации
+            updateSceneList(); 
         });
 }
 
