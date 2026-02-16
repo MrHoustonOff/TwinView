@@ -7,8 +7,17 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+    
     <div class="app-container">
         <h1>TWINVIEW</h1>
-        </div>
+    </div>
+
+    <div id="drag-overlay" class="drag-overlay">
+        <span>Отпустите файлы для загрузки</span>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
