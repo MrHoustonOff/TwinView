@@ -10,16 +10,70 @@
     
     <div class="app-container">
         <div class="sidebar">
-            <h2>Scene Assets</h2>
+            <div class="sidebar-header">
+                <h2>Scene Assets</h2>
+            </div>
+            
             <div id="scene-list" class="scene-list">
                 </div>
-            <div class="sidebar-footer">
-                <button id="btn-clean" class="btn-clean">Clear Inactive</button>
+            
+            <div class="sidebar-actions">
+                <button id="btn-clean" class="btn-action">Clear Inactive</button>
+                <button id="btn-all-inactive" class="btn-action">All Inactive</button>
+            </div>
+
+            <div class="sidebar-settings">
+                <div class="setting-row">
+                    <span class="setting-label">Gap</span>
+                    <input type="range" id="gap-slider" min="0" max="50" value="5" class="slider-input">
+                    <span id="gap-value" class="setting-value">5px</span>
+
+                </div>
+
+                <div class="setting-row">
+                    <span class="setting-label">Highlight Active</span>
+                    <label class="switch">
+                        <input type="checkbox" id="highlight-check">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="setting-label">Synchronize</span>
+                    <label class="switch">
+                        <input type="checkbox" id="sync-check" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="mode-selector">
+                    <button class="btn-mode active" data-mode="multi">Multi</button>
+                    <button class="btn-mode" data-mode="single">Single (WIP)</button>
+                </div>
+
+                <div id="submode-container" class="submode-selector">
+                    <button class="btn-submode active" data-submode="row" title="Horizontal">H</button>
+                    <button class="btn-submode" data-submode="col" title="Vertical">V</button>
+                    <button class="btn-submode" data-submode="grid" title="Grid">G</button>
+                </div>
             </div>
         </div>
 
         <div class="viewport-area">
-            <div id="viewport-grid" class="viewport-grid"></div>
+            <div id="file-info-bubble" class="file-info-bubble hidden">
+                    <span id="current-filename">filename.png</span>
+            </div>
+            <div id="placeholder-text" class="placeholder">TWINVIEW</div>
+            <div id="viewport-container" class="viewport-container"></div>
+            
+            <div class="camera-helper">
+                <div id="nav-hints-group" class="nav-hints-group hidden">
+                        <span><b>←</b> Prev</span>
+                        <span>Next <b>→</b></span>
+                        <div class="helper-divider"></div>
+                </div>
+                <span><b>LMB</b> Pan</span>
+                <span><b>Wheel</b> Zoom</span>
+                <span><b>Space</b> Reset</span>
+                <span id="sync-status"><b>Sync</b> On</span>
+            </div>
         </div>
     </div>
 
@@ -29,6 +83,8 @@
 
     <div id="toast-container" class="toast-container"></div>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/state.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/viewport.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
 </body>
 </html>
