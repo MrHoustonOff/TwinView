@@ -1,301 +1,612 @@
 :root {
-    --bg-color: #1e1e1e; 
-    --text-color: #e0e0e0;
-    --sidebar-bg: rgba(25, 25, 25, 0.95);
-    --accent-color: #2ecc71;
-    --gap-color: #000000;
-    --highlight-color: rgba(46, 204, 113, 0.4); 
+    /* --- APPLE DARK PALETTE --- */
+    --bg-app: #000000;
+    --bg-sidebar: rgba(28, 28, 30, 0.75); /* Полупрозрачный фон сайдбара */
+    --bg-panel: rgba(44, 44, 46, 0.8);    /* Плашки и кнопки */
+    
+    --text-primary: #FFFFFF;
+    --text-secondary: rgba(235, 235, 245, 0.6);
+    --text-tertiary: rgba(235, 235, 245, 0.3);
+
+    --accent-color: #32d74b; /* Apple Green */
+    --accent-glow: rgba(50, 215, 75, 0.3);
+    
+    --border-glass: 1px solid rgba(255, 255, 255, 0.1);
+    --separator: 1px solid rgba(84, 84, 88, 0.35);
+
+    /* --- ANIMATIONS --- */
+    --ease-ios: cubic-bezier(0.25, 1, 0.5, 1);
 }
 
+/* Сброс и База */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
     user-select: none;
+    -webkit-font-smoothing: antialiased; /* Apple font rendering */
+    -moz-osx-font-smoothing: grayscale;
 }
 
 body, html {
     width: 100%;
     height: 100%;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-app);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
     overflow: hidden;
+    font-size: 13px;
 }
 
 .app-container {
     display: flex;
-    flex-direction: row;
-    height: 100vh;
     width: 100vw;
-    overflow: hidden;
+    height: 100vh;
+    background: radial-gradient(circle at 50% 120%, #1c1c1e 0%, #000000 80%);
 }
 
-/* --- SIDEBAR --- */
+/* --- SIDEBAR (macOS Sidebar Style) --- */
 .sidebar {
     width: 280px;
     height: 100%;
-    background-color: var(--sidebar-bg);
-    border-right: 1px solid rgba(255,255,255,0.05);
     display: flex;
     flex-direction: column;
-    z-index: 10;
     flex-shrink: 0;
+    
+    /* Эффект стекла */
+    background: var(--bg-sidebar);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-right: var(--border-glass);
+    z-index: 100;
 }
 
-.sidebar-header { padding: 20px; }
+.sidebar-header {
+    padding: 30px 20px 15px;
+    /* Пространство для "светофора" окна, если бы это было нативное приложение */
+}
+
 .sidebar-header h2 {
     font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
     text-transform: uppercase;
-    letter-spacing: 2px;
-    color: #555;
+    color: var(--text-tertiary);
 }
 
+/* Список сцен */
 .scene-list {
     flex: 1;
     overflow-y: auto;
+    padding: 0 16px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 10px 20px;
+    gap: 4px;
 }
 
-.scene-list::-webkit-scrollbar { width: 5px; }
-.scene-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+/* Скроллбар (тонкий, как в Mac) */
+.scene-list::-webkit-scrollbar { width: 6px; }
+.scene-list::-webkit-scrollbar-track { background: transparent; }
+.scene-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+}
 
-/* --- SCENE ITEM --- */
+/* Элемент списка */
 .scene-item {
     display: flex;
     align-items: center;
-    padding: 8px;
-    background: rgba(255,255,255,0.02);
-    border-radius: 6px;
-    gap: 10px;
-    content-visibility: auto;
-    contain-intrinsic-size: 50px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    gap: 12px;
+    transition: background 0.2s;
+    cursor: default;
 }
 
-.thumb { width: 36px; height: 36px; border-radius: 4px; object-fit: cover; background: #000; }
-.file-info { flex: 1; overflow: hidden; }
-.filename { font-size: 12px; color: #bbb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.scene-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
 
-/* --- SWITCH --- */
-.switch { position: relative; width: 32px; height: 18px; }
+.thumb {
+    width: 38px;
+    height: 38px;
+    border-radius: 6px;
+    object-fit: cover;
+    background: #2c2c2e;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.file-info {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.filename {
+    font-size: 13px;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Кнопка удаления в списке */
+.btn-delete-asset {
+    background: transparent;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    margin-right: 8px;
+}
+.scene-item:hover .btn-delete-asset { opacity: 1; }
+.btn-delete-asset:hover { transform: scale(1.2); }
+
+/* --- SWITCH (iOS Toggle Fixed) --- */
+.switch {
+    position: relative;
+    width: 34px !important; /* Принудительный размер */
+    height: 20px !important;
+    flex-shrink: 0; /* Чтобы не сжимались в списке */
+}
 .switch input { opacity: 0; width: 0; height: 0; }
-.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #444; transition: .3s; border-radius: 20px; }
-.slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px; background-color: white; transition: .3s; border-radius: 50%; }
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(120, 120, 128, 0.32);
+    transition: background-color 0.3s var(--ease-ios);
+    border-radius: 20px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px; width: 16px;
+    left: 2px; bottom: 2px;
+    background-color: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
 input:checked + .slider { background-color: var(--accent-color); }
 input:checked + .slider:before { transform: translateX(14px); }
 
-/* --- FOOTERS --- */
+/* --- SIDEBAR FOOTER (Controls) --- */
 .sidebar-actions, .sidebar-settings {
-    padding: 15px 20px;
-    border-top: 1px solid rgba(255,255,255,0.05);
+    padding: 20px 16px;
+    background: rgba(0,0,0,0.1);
+    border-top: var(--border-glass);
 }
 
+/* Кнопки действий (Action Buttons) */
 .btn-action {
     width: 100%;
-    background: transparent;
-    color: #888;
-    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+    border: none;
     padding: 8px;
     margin-bottom: 8px;
-    border-radius: 4px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
     cursor: pointer;
-    font-size: 10px;
-    text-transform: uppercase;
-    transition: 0.2s;
+    transition: background 0.2s;
 }
 
-.btn-action:hover { color: #fff; border-color: #666; }
-#btn-clean:hover { color: #e74c3c; border-color: #e74c3c; }
+.btn-action:hover { background: rgba(255, 255, 255, 0.15); }
+.btn-action:active { transform: scale(0.98); }
+#btn-clean { color: #ff453a; } /* Apple Red */
+#btn-clean:hover { background: rgba(255, 69, 58, 0.15); }
 
-.setting-row { display: flex; align-items: center; gap: 10px; font-size: 11px; color: #888; margin-bottom: 10px; }
-.setting-value { width: 35px; text-align: right; }
-.slider-input { -webkit-appearance: none; flex: 1; height: 3px; background: #444; border-radius: 2px; outline: none; }
-.slider-input::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: #ddd; cursor: pointer; }
-
-/* --- VIEWPORT --- */
-.viewport-area {
-    flex: 1;
-    background: #000;
-    position: relative;
+/* Ряды настроек */
+.setting-row {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    overflow: hidden;
+    gap: 12px;
+    margin-bottom: 12px;
 }
 
-.placeholder {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-weight: 100;
-    letter-spacing: 15px;
-    font-size: 5rem;
-    color: rgba(255, 255, 255, 0.03);
-    pointer-events: none;
-    transition: opacity 0.5s;
-    z-index: 1; /* Чтобы был над пустым фоном */
+.setting-label {
+    font-size: 12px;
+    color: var(--text-secondary);
 }
 
-.viewport-container {
+.setting-value {
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    color: var(--text-secondary);
+    min-width: 30px;
+    text-align: right;
+}
+
+/* Слайдер (Range) */
+.slider-input {
+    -webkit-appearance: none;
     width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: row;
+    height: 4px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+    outline: none;
+}
+.slider-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    cursor: grab;
+    margin-top: -7px; /* Центрирование */
 }
 
-.viewport-slot {
-    flex: 1;
-    position: relative;
-    overflow: hidden;
-    background: #121212;
-    transition: box-shadow 0.2s ease;
-}
-
-/* Обводка при наведении (только если включен чекбокс) */
-.viewport-container.highlight-enabled .viewport-slot:hover {
-    box-shadow: inset 0 0 0 2px var(--highlight-color);
-}
-
-.viewport-slot img {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    max-width: none;
-    max-height: none;
-    pointer-events: none;
-}
-
-/* --- UTILS --- */
-.hidden { opacity: 0 !important; }
-
-.toast-container { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
-.toast { background: rgba(30,30,30,0.9); color: #fff; padding: 10px 20px; border-radius: 50px; font-size: 13px; backdrop-filter: blur(10px); margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.1); opacity: 0; transform: translateY(-20px); transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-.toast.show { opacity: 1; transform: translateY(0); }
-.toast.success { border-color: var(--accent-color); }
-.toast.error { border-color: #e74c3c; }
-
-.drag-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.3s; }
-.drag-overlay.active { opacity: 1; pointer-events: all; }
-.drag-overlay span { border: 2px dashed #444; padding: 40px; border-radius: 20px; font-size: 1.5rem; color: #888; }
-
-/* Кнопки режимов */
+/* Segmented Control (Переключатель режимов) */
 .mode-selector, .submode-selector {
     display: flex;
-    background: rgba(0,0,0,0.3);
-    border-radius: 6px;
+    background: rgba(118, 118, 128, 0.24); /* Подложка как в macOS */
     padding: 2px;
-    margin-top: 15px;
+    border-radius: 7px;
+    margin-top: 12px;
 }
 
 .btn-mode, .btn-submode {
     flex: 1;
     background: transparent;
     border: none;
-    color: #666;
-    font-size: 10px;
-    padding: 6px;
+    color: var(--text-primary);
+    font-size: 11px;
+    padding: 4px 0;
+    border-radius: 5px;
     cursor: pointer;
-    text-transform: uppercase;
-    border-radius: 4px;
-    transition: 0.2s;
+    transition: background 0.2s;
 }
 
 .btn-mode.active, .btn-submode.active {
-    background: var(--accent-color);
-    color: #000;
-    font-weight: bold;
+    background: #636366; /* Серый активный, как в системных настройках */
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    font-weight: 600;
 }
 
-/* Изменения для контейнера вьюпорта */
+/* --- VIEWPORT AREA --- */
+/* --- VIEWPORT AREA --- */
+.viewport-area {
+    flex: 1;
+    position: relative;
+    /* ТЕМНЫЙ СТЕКЛЯННЫЙ ФОН (вместо белого/черного) */
+    background: radial-gradient(circle at center, #2c2c2e 0%, #1c1c1e 100%);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.placeholder {
+    position: absolute;
+    font-size: 6rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.02);
+    letter-spacing: 10px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* --- VIEWPORT CONTAINER (FIXED) --- */
+.viewport-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    /* Убираем любые дефолтные отступы, чтобы gap 0 работал честно */
+    padding: 0; 
+}
+
 .viewport-container.mode-row { flex-direction: row; }
 .viewport-container.mode-col { flex-direction: column; }
 .viewport-container.mode-grid {
     display: grid;
-    /* Автоматическая квадратная сетка */
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
 }
 
-/* Пустой слот в сетке */
-.viewport-slot.empty-logo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #0a0a0a;
-}
-.viewport-slot.empty-logo span {
-    font-weight: 100;
-    letter-spacing: 4px;
-    color: rgba(255, 255, 255, 0.08);
-    font-size: 1rem;
-    text-transform: uppercase;
+.viewport-slot {
+    flex: 1;
+    position: relative;
+    
+    /* ФИКС ЧЕРНОТЫ: Делаем фон почти прозрачным, чтобы виден был градиент App Container */
+    background: rgba(0, 0, 0, 0.2); 
+    
+    /* Тонкая граница для разделения ячеек */
+    outline: 1px solid rgba(255, 255, 255, 0.05);
+    outline-offset: -1px;
+    
+    overflow: hidden;
+    transition: background 0.2s;
 }
 
-/* --- HIGHLIGHT --- */
-/* Создаем невидимую рамку внутри каждого слота */
+/* В Single режиме убираем рамки */
+.viewport-container.mode-single .viewport-slot {
+    outline: none;
+    background: transparent;
+}
+
+/* Картинка */
+.viewport-slot img {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 1;
+    
+    /* Тень только у картинки, чтобы она "парила" над фоном */
+    filter: drop-shadow(0 20px 50px rgba(0,0,0,0.6));
+}
+
+/* --- HIGHLIGHT LOGIC --- */
 .viewport-slot::after {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    pointer-events: none; /* Чтобы не мешать кликам */
-    border: 2px solid var(--accent-color);
+    box-shadow: inset 0 0 0 2px var(--accent-color); /* Зеленая рамка */
     opacity: 0;
-    transition: opacity 0.2s;
-    z-index: 10;
+    z-index: 100;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
 }
 
-/* Показываем её только если чекбокс включен И мы навели мышь */
-.highlight-enabled .viewport-slot:hover::after {
+.viewport-container:not(.mode-single).highlight-enabled .viewport-slot:hover::after {
     opacity: 1;
 }
+/* --- SINGLE CONTROLS --- */
+.single-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+    padding-top: 15px;
+    border-top: var(--separator);
+}
+.single-controls.hidden { display: none !important; }
 
-/* --- GRID MATRIX --- */
-.viewport-container.mode-grid {
-    display: grid;
-    /* Управляется через JS (gridTemplateColumns) */
-    width: 100%;
-    height: 100%;
+.counter-group {
+    display: flex;
+    align-items: center;
+    background: rgba(118, 118, 128, 0.24);
+    border-radius: 6px;
+    padding: 2px;
 }
 
-.viewport-slot.empty-logo {
+.btn-counter {
+    width: 24px; height: 24px;
+    background: transparent;
+    border: none;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 4px;
+}
+.btn-counter:hover { background: rgba(255,255,255,0.1); }
+
+#slider-count {
+    min-width: 24px;
+    text-align: center;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.style-select {
+    appearance: none;
+    -webkit-appearance: none;
+    
+    background-color: rgba(44, 44, 46, 1); /* Плотный темный цвет */
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    
+    padding: 6px 24px 6px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    
+    /* Белая стрелка */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+    background-size: 12px;
+}
+
+.style-select:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Красим сами опции внутри списка */
+.style-select option {
+    background-color: #1c1c1e;
+    color: white;
+    padding: 10px;
+}
+/* --- SLICERS & MARKERS --- */
+.slice-marker {
+    position: absolute;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: rgba(20, 20, 20, 0.6);
+    backdrop-filter: blur(10px);
+    border: 2px solid #fff; /* Цвет переопределяется JS, но рамка белая */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+    cursor: grab;
+    transition: transform 0.1s;
+}
+.slice-marker:hover { transform: scale(1.15); cursor: grabbing; }
+
+.slice-marker span {
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.slice-label {
+    position: absolute;
+    background: rgba(28, 28, 30, 0.85);
+    backdrop-filter: blur(20px);
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: var(--border-glass);
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 600;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 500;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: all 0.2s ease-out;
+}
+
+/* --- FIX: DRAG & DROP OVERLAY --- */
+.drag-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(15px); /* Сильный блюр всего интерфейса */
+    z-index: 9999; /* Очень высоко */
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    opacity: 0;
+    pointer-events: none; /* CRITICAL: По умолчанию сквозь него можно кликать */
+    transition: opacity 0.3s ease;
+}
+
+.drag-overlay.active {
+    opacity: 1;
+    pointer-events: all; /* Включаем перехват событий только при драге */
+}
+
+.drag-overlay span {
+    border: 3px dashed var(--accent-color);
+    padding: 40px 60px;
+    border-radius: 20px;
+    color: var(--accent-color);
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+/* --- FIX: TOASTS --- */
+.toast-container {
+    position: fixed;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    background: #0d0d0d;
-    border: 1px solid rgba(255,255,255,0.02);
+    pointer-events: none;
 }
 
-.camera-helper {
+.toast {
+    /* Базовый стиль стекла */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.2);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* Зеленое стекло */
+.toast.success {
+    background: rgba(50, 215, 75, 0.25); /* Прозрачный зеленый */
+    border-color: rgba(50, 215, 75, 0.4);
+}
+
+/* Красное стекло */
+.toast.error {
+    background: rgba(255, 69, 58, 0.25); /* Прозрачный красный */
+    border-color: rgba(255, 69, 58, 0.4);
+}
+/* --- HUD (Floating Helpers - Reference Style) --- */
+.file-info-bubble, .camera-helper {
     position: absolute;
-    bottom: 20px;
     left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 25px;
-    padding: 8px 20px;
-    /* Тёмный полупрозрачный фон */
+    transform: translateX(-50%); /* Железное центрирование */
+    
+    /* Твой эталонный стиль */
     background: rgba(10, 10, 10, 0.6); 
-    /* Сильное размытие заднего плана для эффекта стекла */
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-radius: 30px;
-    /* Тонкая темная граница */
-    border: 1px solid rgba(255, 255, 255, 0.03);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    pointer-events: none;
-    z-index: 100;
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* Для плавного расширения */
     
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.03); /* Супер-тонкая граница */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    
+    z-index: 200;
+    pointer-events: none;
+    
+    /* Твоя плавная анимация */
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- ВЕРХНИЙ БАБЛ (Имя файла) --- */
+.file-info-bubble {
+    top: 20px;
+    padding: 8px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+.file-info-bubble span {
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.6); /* Чуть ярче, чем подсказки */
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+}
+
+/* --- НИЖНИЙ БАБЛ (Подсказки) --- */
+.camera-helper {
+    bottom: 30px;
+    padding: 8px 20px;
+    display: flex;
+    gap: 25px;
+    
+    /* Эффект появления при наведении на холст */
+    opacity: 0.4; 
+}
+
+.viewport-area:hover .camera-helper {
+    opacity: 1;
 }
 
 .camera-helper span {
     font-size: 10px;
-    color: rgba(255, 255, 255, 0.25); /* Очень приглушенный текст */
+    color: rgba(255, 255, 255, 0.25); /* Твой приглушенный цвет */
     text-transform: uppercase;
     letter-spacing: 1.2px;
     display: flex;
@@ -303,124 +614,32 @@ input:checked + .slider:before { transform: translateX(14px); }
 }
 
 .camera-helper b {
-    color: rgba(255, 255, 255, 0.5); /* Более яркие клавиши */
+    color: rgba(255, 255, 255, 0.5); /* Акцент на клавишах */
     font-weight: 600;
     margin-right: 5px;
 }
-
-/* Эффект появления при наведении на область вьюпорта */
-.viewport-area .camera-helper {
-    opacity: 0.4; /* В покое почти прозрачен */
-}
-
-.viewport-area:hover .camera-helper {
-    opacity: 0.9; /* Проявляется при работе */
-}
-
-.file-info-bubble {
-    position: absolute;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
+.viewport-area:hover .camera-helper { opacity: 1; }
+.viewport-area:hover .camera-helper { opacity: 1; }
+/* --- GRID & EMPTY --- */
+.viewport-slot.empty-logo {
     display: flex;
     align-items: center;
-    gap: 15px;
-    padding: 8px 25px;
-    background: rgba(10, 10, 10, 0.7);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-radius: 30px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    z-index: 100;
-    
-    /* Анимация появления самого бабла */
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    max-width: 600px;
-    overflow: hidden;
+    justify-content: center;
+    background: #050505;
+    border: 1px dashed rgba(255,255,255,0.05);
+}
+.viewport-slot.empty-logo span {
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: rgba(255, 255, 255, 0.05);
+    font-size: 1rem;
 }
 
-.file-info-bubble span {
-    font-size: 11px;
-    color: var(--accent-color);
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    font-weight: 500;
-    white-space: nowrap;
-}
-
-/* Стили для подсказок стрелок */
-.nav-hint {
-    color: rgba(255, 255, 255, 0.2) !important;
-    font-size: 9px !important;
-    transition: opacity 0.3s ease;
-}
-
-/* Состояние скрытых подсказок */
-.file-info-bubble.compact .nav-hint {
-    width: 0;
-    opacity: 0;
-    margin: 0;
-    pointer-events: none;
-}
-
-.file-info-bubble.hidden {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-20px);
-}
-
-.nav-hints-group {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    overflow: hidden;
-    transition: all 0.4s ease;
-    max-width: 300px;
-    opacity: 1;
-}
+.hidden { display: none !important; }
 
 .nav-hints-group.hidden {
-    max-width: 0;
-    opacity: 0;
-    margin: 0;
-    pointer-events: none;
+    display: block !important; /* Или block, в зависимости от твоей верстки */
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
-.helper-divider {
-    width: 1px;
-    height: 12px;
-    background: rgba(255, 255, 255, 0.1);
-    margin-left: 5px;
-}
-
-/* Текст хелпера */
-.camera-helper span {
-    font-size: 10px;
-    color: rgba(255, 255, 255, 0.3);
-    white-space: nowrap;
-}
-
-.nav-hints-group {
-    display: flex; /* Всегда flex! */
-    align-items: center;
-    gap: 12px;
-    overflow: hidden;
-    max-width: 500px; /* Достаточно для текста */
-    opacity: 1;
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* Скрытое состояние: убираем ширину и прозрачность, а не display */
-.nav-hints-group.hidden {
-    max-width: 0 !important;
-    opacity: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    pointer-events: none;
-}
-
-.helper-divider {
-    width: 1px;
-    height: 12px;
-    background: rgba(255, 255, 255, 0.1);
-    margin: 0 5px;
-}

@@ -17,8 +17,9 @@ if __name__ == '__main__':
         server,
         width=1200,
         height=800,
+        min_size=(800, 500),
         background_color='#121212' # Чтобы не было белой вспышки при запуске
     )
     
     # Запуск цикла событий
-    webview.start(debug=True)
+    webview.start(debug=False)

@@ -1,0 +1,610 @@
+:root {
+    --bg-color: #1e1e1e; 
+    --text-color: #e0e0e0;
+    --sidebar-bg: rgba(25, 25, 25, 0.95);
+    --accent-color: #2ecc71;
+    --gap-color: #000000;
+    --highlight-color: rgba(46, 204, 113, 0.4); 
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow: hidden;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+/* --- SIDEBAR --- */
+.sidebar {
+    width: 280px;
+    height: 100%;
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+    flex-shrink: 0;
+}
+
+.sidebar-header { padding: 20px; }
+.sidebar-header h2 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #555;
+}
+
+.scene-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 20px;
+}
+
+.scene-list::-webkit-scrollbar { width: 5px; }
+.scene-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+/* --- SCENE ITEM --- */
+.scene-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 6px;
+    gap: 10px;
+    content-visibility: auto;
+    contain-intrinsic-size: 50px;
+}
+
+.thumb { width: 36px; height: 36px; border-radius: 4px; object-fit: cover; background: #000; }
+.file-info { flex: 1; overflow: hidden; }
+.filename { font-size: 12px; color: #bbb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* --- SWITCH --- */
+.switch { position: relative; width: 32px; height: 18px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #444; transition: .3s; border-radius: 20px; }
+.slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px; background-color: white; transition: .3s; border-radius: 50%; }
+input:checked + .slider { background-color: var(--accent-color); }
+input:checked + .slider:before { transform: translateX(14px); }
+
+/* --- FOOTERS --- */
+.sidebar-actions, .sidebar-settings {
+    padding: 15px 20px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+.btn-action {
+    width: 100%;
+    background: transparent;
+    color: #888;
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 8px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    text-transform: uppercase;
+    transition: 0.2s;
+}
+
+.btn-action:hover { color: #fff; border-color: #666; }
+#btn-clean:hover { color: #e74c3c; border-color: #e74c3c; }
+
+.setting-row { display: flex; align-items: center; gap: 10px; font-size: 11px; color: #888; margin-bottom: 10px; }
+.setting-value { width: 35px; text-align: right; }
+.slider-input { -webkit-appearance: none; flex: 1; height: 3px; background: #444; border-radius: 2px; outline: none; }
+.slider-input::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: #ddd; cursor: pointer; }
+
+/* --- VIEWPORT --- */
+.viewport-area {
+    flex: 1;
+    background: #000;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.placeholder {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: 100;
+    letter-spacing: 15px;
+    font-size: 5rem;
+    color: rgba(255, 255, 255, 0.03);
+    pointer-events: none;
+    transition: opacity 0.5s;
+    z-index: 1; /* Чтобы был над пустым фоном */
+}
+
+.viewport-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+}
+
+.viewport-slot {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #121212;
+    transition: box-shadow 0.2s ease;
+}
+
+/* Обводка при наведении (только если включен чекбокс) */
+.viewport-container.highlight-enabled .viewport-slot:hover {
+    box-shadow: inset 0 0 0 2px var(--highlight-color);
+}
+
+.viewport-slot img {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    max-width: none;
+    max-height: none;
+    pointer-events: none;
+}
+
+/* --- UTILS --- */
+.hidden { opacity: 0 !important; }
+
+.toast-container { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
+.toast { background: rgba(30,30,30,0.9); color: #fff; padding: 10px 20px; border-radius: 50px; font-size: 13px; backdrop-filter: blur(10px); margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.1); opacity: 0; transform: translateY(-20px); transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { border-color: var(--accent-color); }
+.toast.error { border-color: #e74c3c; }
+
+.drag-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.3s; }
+.drag-overlay.active { opacity: 1; pointer-events: all; }
+.drag-overlay span { border: 2px dashed #444; padding: 40px; border-radius: 20px; font-size: 1.5rem; color: #888; }
+
+/* Кнопки режимов */
+.mode-selector, .submode-selector {
+    display: flex;
+    background: rgba(0,0,0,0.3);
+    border-radius: 6px;
+    padding: 2px;
+    margin-top: 15px;
+}
+
+.btn-mode, .btn-submode {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #666;
+    font-size: 10px;
+    padding: 6px;
+    cursor: pointer;
+    text-transform: uppercase;
+    border-radius: 4px;
+    transition: 0.2s;
+}
+
+.btn-mode.active, .btn-submode.active {
+    background: var(--accent-color);
+    color: #000;
+    font-weight: bold;
+}
+
+/* Изменения для контейнера вьюпорта */
+.viewport-container.mode-row { flex-direction: row; }
+.viewport-container.mode-col { flex-direction: column; }
+.viewport-container.mode-grid {
+    display: grid;
+    /* Автоматическая квадратная сетка */
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+}
+
+/* Пустой слот в сетке */
+.viewport-slot.empty-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0a0a0a;
+}
+.viewport-slot.empty-logo span {
+    font-weight: 100;
+    letter-spacing: 4px;
+    color: rgba(255, 255, 255, 0.08);
+    font-size: 1rem;
+    text-transform: uppercase;
+}
+
+/* --- HIGHLIGHT --- */
+/* Создаем невидимую рамку внутри каждого слота */
+.viewport-slot::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none; /* Чтобы не мешать кликам */
+    border: 2px solid var(--accent-color);
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 10;
+}
+
+/* Показываем её только если чекбокс включен И мы навели мышь */
+.highlight-enabled .viewport-slot:hover::after {
+    opacity: 1;
+}
+
+/* --- GRID MATRIX --- */
+.viewport-container.mode-grid {
+    display: grid;
+    /* Управляется через JS (gridTemplateColumns) */
+    width: 100%;
+    height: 100%;
+}
+
+.viewport-slot.empty-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #0d0d0d;
+    border: 1px solid rgba(255,255,255,0.02);
+}
+
+.camera-helper {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 25px;
+    padding: 8px 20px;
+    /* Тёмный полупрозрачный фон */
+    background: rgba(10, 10, 10, 0.6); 
+    /* Сильное размытие заднего плана для эффекта стекла */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 30px;
+    /* Тонкая темная граница */
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+    z-index: 100;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* Для плавного расширения */
+    
+}
+
+.camera-helper span {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.25); /* Очень приглушенный текст */
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    display: flex;
+    align-items: center;
+}
+
+.camera-helper b {
+    color: rgba(255, 255, 255, 0.5); /* Более яркие клавиши */
+    font-weight: 600;
+    margin-right: 5px;
+}
+
+/* Эффект появления при наведении на область вьюпорта */
+.viewport-area .camera-helper {
+    opacity: 0.4; /* В покое почти прозрачен */
+}
+
+.viewport-area:hover .camera-helper {
+    opacity: 0.9; /* Проявляется при работе */
+}
+
+.file-info-bubble {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 8px 25px;
+    background: rgba(10, 10, 10, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    z-index: 100;
+    
+    /* Анимация появления самого бабла */
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    max-width: 600px;
+    overflow: hidden;
+}
+
+.file-info-bubble span {
+    font-size: 11px;
+    color: var(--accent-color);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Стили для подсказок стрелок */
+.nav-hint {
+    color: rgba(255, 255, 255, 0.2) !important;
+    font-size: 9px !important;
+    transition: opacity 0.3s ease;
+}
+
+/* Состояние скрытых подсказок */
+.file-info-bubble.compact .nav-hint {
+    width: 0;
+    opacity: 0;
+    margin: 0;
+    pointer-events: none;
+}
+
+.file-info-bubble.hidden {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+}
+
+.nav-hints-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    max-width: 300px;
+    opacity: 1;
+}
+
+.nav-hints-group.hidden {
+    max-width: 0;
+    opacity: 0;
+    margin: 0;
+    pointer-events: none;
+}
+
+.helper-divider {
+    width: 1px;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    margin-left: 5px;
+}
+
+/* Текст хелпера */
+.camera-helper span {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.3);
+    white-space: nowrap;
+}
+
+.nav-hints-group {
+    display: flex; /* Всегда flex! */
+    align-items: center;
+    gap: 12px;
+    overflow: hidden;
+    max-width: 500px; /* Достаточно для текста */
+    opacity: 1;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Скрытое состояние: убираем ширину и прозрачность, а не display */
+.nav-hints-group.hidden {
+    max-width: 0 !important;
+    opacity: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    pointer-events: none;
+}
+
+.helper-divider {
+    width: 1px;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0 5px;
+}
+
+.slice-marker {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    background: var(--accent-color);
+    color: #000;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: ew-resize; /* или ns-resize для горизонтального */
+    z-index: 1000;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    border: 2px solid #fff;
+}
+
+.slice-label {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    padding: 2px 6px;
+    font-size: 10px;
+    border-radius: 4px;
+    pointer-events: none;
+}
+
+.viewport-container.mode-single .slice-layer {
+    pointer-events: none; /* Чтобы клики проходили сквозь слои к маркерам */
+}
+
+/* Стили для счетчика слайсеров и выпадающего списка */
+.counter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 4px;
+    padding: 2px;
+}
+
+.btn-counter {
+    background: #333;
+    border: none;
+    color: white;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.btn-counter:hover { background: var(--accent-color); color: black; }
+
+.style-select {
+    background: #333;
+    color: white;
+    border: 1px solid #444;
+    padding: 4px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+/* Правильное скрытие/показ блоков управления */
+.hidden {
+    display: none !important;
+}
+
+/* Маркеры в стиле Apple */
+.slice-marker {
+    position: absolute;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid; /* Цвет задается в JS */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    cursor: ew-resize;
+    z-index: 1000;
+    transform: translate(-50%, 0);
+    transition: transform 0.15s ease;
+}
+
+.slice-marker span {
+    font-size: 13px;
+    font-weight: 800;
+}
+
+/* Лейбл для слайсера */
+.slice-label {
+    position: absolute;
+    top: 65px; /* Стандартная высота под маркером */
+    padding: 5px 14px;
+    background: rgba(10, 10, 10, 0.5);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    color: #fff;
+    font-size: 10px;
+    letter-spacing: 0.8px;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 150;
+    /* Убираем дефолтный left, чтобы он задавался из JS */
+}
+
+.slice-layer[style*="zIndex: 100"] .slice-label {
+    top: 20px; /* Поднимаем чуть выше, так как там нет кружка-маркера */
+}
+
+/* Центрированный лейбл при 0 слайдеров */
+.slice-label.centered-label {
+    top: 50px !important;
+    left: 50% !important;
+    transform: translateX(-50%);
+    background: rgba(var(--accent-color-rgb), 0.15); /* Если есть переменная цвета */
+    border: 1px solid var(--accent-color);
+}
+
+.mode-single .slice-label {
+    transition: left 0.1s, top 0.1s, right 0.1s, bottom 0.1s;
+}
+
+.slice-marker[style*="ns-resize"] {
+    transform: translate(0, -50%); /* Центрируем по вертикали */
+}
+
+.slice-label {
+    transition: left 0.2s cubic-bezier(0.16, 1, 0.3, 1), 
+                top 0.2s cubic-bezier(0.16, 1, 0.3, 1), 
+                right 0.2s cubic-bezier(0.16, 1, 0.3, 1), 
+                bottom 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Контейнер для настроек Single */
+.single-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* Расстояние между рядами */
+    padding-top: 15px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    margin-top: 10px;
+}
+
+/* Принудительно скрываем, если есть класс hidden */
+.single-controls.hidden {
+    display: none !important;
+}
+
+/* Каждый ряд внутри должен растягиваться и выравнивать контент */
+.single-controls .setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+/* Чтобы селект не обрезался */
+.style-select {
+    background: #2a2a2a;
+    color: white;
+    border: 1px solid #444;
+    padding: 4px 8px;
+    border-radius: 4px;
+    outline: none;
+}
+
+.empty-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #111; /* Чуть светлее фона */
+    color: #333; /* Неяркий текст */
+    font-weight: bold;
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+    border: 1px dashed #222; /* Опционально: пунктирная рамка */
+}

@@ -53,6 +53,32 @@
                     <button class="btn-submode" data-submode="col" title="Vertical">V</button>
                     <button class="btn-submode" data-submode="grid" title="Grid">G</button>
                 </div>
+                    <div id="single-controls" class="single-controls hidden">
+                        <div class="setting-row">
+                            <span class="setting-label">Sliders</span>
+                            <div class="counter-group">
+                                <button id="btn-sub-slider" class="btn-counter">-</button>
+                                <span id="slider-count">0</span>
+                                <button id="btn-add-slider" class="btn-counter">+</button>
+                            </div>
+                        </div>
+
+                        <div class="setting-row">
+                            <span class="setting-label">Slicing Mode</span>
+                            <select id="select-slice-mode" class="style-select">
+                                <option value="vertical">Vertical</option>
+                                <option value="horizontal">Horizontal</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-row">
+                            <span class="setting-label">Show Labels</span>
+                            <label class="switch">
+                                <input type="checkbox" id="slice-labels-check" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
             </div>
         </div>
 
@@ -64,7 +90,7 @@
             <div id="viewport-container" class="viewport-container"></div>
             
             <div class="camera-helper">
-                <div id="nav-hints-group" class="nav-hints-group hidden">
+                <div id="nav-hints-group" class="nav-hints-group">
                         <span><b>←</b> Prev</span>
                         <span>Next <b>→</b></span>
                         <div class="helper-divider"></div>
