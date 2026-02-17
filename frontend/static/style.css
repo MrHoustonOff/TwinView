@@ -1,16 +1,10 @@
 :root {
-    --bg-color: #121212; /* Deep dark background */
-    --text-color: #e0e0e0; /* Soft white */
-    --accent-color: #3a3a3a;
- --sidebar-bg: rgba(30, 30, 30, 0.6);
-    --sidebar-width: 280px;
-    --item-hover: rgba(255, 255, 255, 0.05);
-    
-    --success-color: rgba(46, 204, 113, 0.2);
-    --success-border: #2ecc71;
-    --error-color: rgba(231, 76, 60, 0.2);
-    --error-border: #e74c3c;
-    --toast-bg: rgba(35, 35, 35, 0.95);
+    --bg-color: #1e1e1e; 
+    --text-color: #e0e0e0;
+    --sidebar-bg: rgba(25, 25, 25, 0.95);
+    --accent-color: #2ecc71;
+    --gap-color: #000000;
+    --highlight-color: rgba(46, 204, 113, 0.4); /* Мягкий зеленый */
 }
 
 * {
@@ -31,31 +25,30 @@ body, html {
 
 .app-container {
     display: flex;
-    flex-direction: row; /* Меняем на row, чтобы сайдбар был слева */
+    flex-direction: row;
     height: 100vh;
     width: 100vw;
+    overflow: hidden;
 }
 
 /* --- SIDEBAR --- */
 .sidebar {
-    width: var(--sidebar-width);
+    width: 280px;
     height: 100%;
     background-color: var(--sidebar-bg);
-    backdrop-filter: blur(10px);
     border-right: 1px solid rgba(255,255,255,0.05);
     display: flex;
     flex-direction: column;
-    padding: 20px;
     z-index: 10;
     flex-shrink: 0;
 }
 
-.sidebar h2 {
-    font-size: 12px;
+.sidebar-header { padding: 20px; }
+.sidebar-header h2 {
+    font-size: 11px;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: #666;
-    margin-bottom: 20px;
+    letter-spacing: 2px;
+    color: #555;
 }
 
 .scene-list {
@@ -64,261 +57,124 @@ body, html {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding-right: 5px;
-    
-    /* Запрещаем резинке дергать все окно */
-    overscroll-behavior: contain;
+    padding: 10px 20px;
 }
 
-/* Возвращаем красивый скроллбар */
-.scene-list::-webkit-scrollbar {
-    width: 6px; /* Чуть шире чем 4px для удобства, но все равно тонкий */
-}
-
-.scene-list::-webkit-scrollbar-track {
-    background: transparent; 
-}
-
-.scene-list::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    transition: background 0.2s;
-}
-
-.scene-list::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
+.scene-list::-webkit-scrollbar { width: 5px; }
+.scene-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 
 /* --- SCENE ITEM --- */
 .scene-item {
     display: flex;
     align-items: center;
-    padding: 8px 10px;
+    padding: 8px;
     background: rgba(255,255,255,0.02);
-    border-radius: 8px;
-    transition: background 0.1s ease;
-    gap: 10px;
-    
-    /* ОПТИМИЗАЦИЯ: Браузер не рендерит контент элемента, если он вне экрана */
-    /* Это дает огромный буст при длинных списках */
-    content-visibility: auto; 
-    contain-intrinsic-size: 56px; 
-}
-
-.scene-item:hover {
-    background: var(--item-hover);
-}
-
-.thumb {
-    width: 40px;
-    height: 40px;
     border-radius: 6px;
-    object-fit: cover;
-    background: #000;
+    gap: 10px;
+    content-visibility: auto;
+    contain-intrinsic-size: 50px;
 }
 
-.file-info {
-    flex: 1;
-    overflow: hidden;
+.thumb { width: 36px; height: 36px; border-radius: 4px; object-fit: cover; background: #000; }
+.file-info { flex: 1; overflow: hidden; }
+.filename { font-size: 12px; color: #bbb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* --- SWITCH --- */
+.switch { position: relative; width: 32px; height: 18px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #444; transition: .3s; border-radius: 20px; }
+.slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px; background-color: white; transition: .3s; border-radius: 50%; }
+input:checked + .slider { background-color: var(--accent-color); }
+input:checked + .slider:before { transform: translateX(14px); }
+
+/* --- FOOTERS --- */
+.sidebar-actions, .sidebar-settings {
+    padding: 15px 20px;
+    border-top: 1px solid rgba(255,255,255,0.05);
 }
 
-.filename {
-    font-size: 13px;
-    color: #ddd;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* --- IOS TOGGLE SWITCH --- */
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 36px;
-    height: 20px;
-    flex-shrink: 0;
-}
-
-.switch input { 
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.slider {
-    position: absolute;
+.btn-action {
+    width: 100%;
+    background: transparent;
+    color: #888;
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 8px;
+    margin-bottom: 8px;
+    border-radius: 4px;
     cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #555;
-    transition: .3s;
-    border-radius: 20px;
+    font-size: 10px;
+    text-transform: uppercase;
+    transition: 0.2s;
 }
 
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 16px;
-    width: 16px;
-    left: 2px;
-    bottom: 2px;
-    background-color: white;
-    transition: .3s;
-    border-radius: 50%;
-}
+.btn-action:hover { color: #fff; border-color: #666; }
+#btn-clean:hover { color: #e74c3c; border-color: #e74c3c; }
 
-input:checked + .slider {
-    background-color: var(--success-border);
-}
+.setting-row { display: flex; align-items: center; gap: 10px; font-size: 11px; color: #888; margin-bottom: 10px; }
+.setting-value { width: 35px; text-align: right; }
+.slider-input { -webkit-appearance: none; flex: 1; height: 3px; background: #444; border-radius: 2px; outline: none; }
+.slider-input::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: #ddd; cursor: pointer; }
 
-input:checked + .slider:before {
-    transform: translateX(16px);
-}
-
-/* --- MAIN AREA (VIEWPORT PLACEHOLDER) --- */
+/* --- VIEWPORT --- */
 .viewport-area {
     flex: 1;
+    background: #000;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
-    background: radial-gradient(circle at center, #252525 0%, #1e1e1e 100%);
+    overflow: hidden;
 }
 
-h1.placeholder {
-    font-weight: 300;
-    letter-spacing: 2px;
-    opacity: 0.1;
-    font-size: 3rem;
+.placeholder {
+    position: absolute;
+    font-weight: 100;
+    letter-spacing: 15px;
+    font-size: 5rem;
+    color: rgba(255, 255, 255, 0.03);
+    pointer-events: none;
+    transition: opacity 0.5s;
+}
+
+.viewport-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+}
+
+.viewport-slot {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #121212;
+    transition: box-shadow 0.2s ease;
+}
+
+/* Обводка при наведении (только если включен чекбокс) */
+.viewport-container.highlight-enabled .viewport-slot:hover {
+    box-shadow: inset 0 0 0 2px var(--highlight-color);
+}
+
+.viewport-slot img {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    max-width: none;
+    max-height: none;
+    pointer-events: none;
 }
 
 /* --- UTILS --- */
-.hidden { opacity: 0; pointer-events: none; }
+.hidden { opacity: 0 !important; }
 
-.drag-overlay {
-    position: fixed; top: 20px; left: 20px; right: 20px; bottom: 20px;
-    border: 2px dashed #666; border-radius: 12px;
-    background-color: rgba(0, 0, 0, 0.8); z-index: 999;
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; pointer-events: none;
-    transition: opacity 0.2s ease, transform 0.2s ease; transform: scale(0.98);
-}
-.drag-overlay.active { opacity: 1; transform: scale(1); pointer-events: all; }
-.drag-overlay span { font-size: 1.5rem; color: #fff; font-weight: 300; }
+.toast-container { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
+.toast { background: rgba(30,30,30,0.9); color: #fff; padding: 10px 20px; border-radius: 50px; font-size: 13px; backdrop-filter: blur(10px); margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.1); opacity: 0; transform: translateY(-20px); transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { border-color: var(--accent-color); }
+.toast.error { border-color: #e74c3c; }
 
-.toast-container {
-    position: fixed; top: 30px; left: 50%; transform: translateX(-50%);
-    z-index: 1000; display: flex; flex-direction: column; align-items: center; pointer-events: none; 
-}
-.toast {
-    background: var(--toast-bg); color: #fff; padding: 12px 24px;
-    border-radius: 50px; font-size: 14px; font-weight: 400;
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.1);
-    opacity: 0; transform: translateY(-20px) scale(0.95);
-    max-height: 100px; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.toast.show { opacity: 1; transform: translateY(0) scale(1); }
-.toast.removing {
-    opacity: 0; transform: translateY(-10px) scale(0.95); max-height: 0; margin-bottom: 0;
-    padding-top: 0; padding-bottom: 0; border-color: transparent;
-}
-.toast.success { border-color: var(--success-border); background: linear-gradient(to right, var(--toast-bg), var(--success-color)); }
-.toast.error { border-color: var(--error-border); background: linear-gradient(to right, var(--toast-bg), var(--error-color)); }
-
-/* --- SIDEBAR FOOTER --- */
-.sidebar-footer {
-    padding-top: 15px;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    margin-top: 10px;
-}
-
-.btn-clean {
-    width: 100%;
-    background: transparent;
-    color: #666;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: all 0.2s ease;
-    font-family: inherit;
-}
-
-.btn-clean:hover {
-    background: rgba(231, 76, 60, 0.1);
-    border-color: rgba(231, 76, 60, 0.4);
-    color: #e74c3c; /* Красный текст при наведении */
-}
-
-.btn-clean:active {
-    transform: scale(0.98);
-}
-
-/* --- VIEWPORT AREA --- */
-.viewport-area {
-    flex: 1;
-    height: 100%;
-    position: relative;
-    background: #121212; /* Глубокий черный для контраста с фото */
-    overflow: hidden; /* Скролл будет внутри сетки */
-    display: flex;
-    flex-direction: column;
-}
-
-/* Сетка отображения */
-.viewport-grid {
-    flex: 1;
-    overflow-y: auto; /* Скролл только если картинки не влезают */
-    padding: 20px;
-    
-    display: grid;
-    /* Магия CSS Grid: адаптивные колонки мин. шириной 300px */
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    align-content: start; /* Чтобы при малом кол-ве фото они были сверху, а не растянуты по вертикали */
-}
-
-/* Карточка изображения во вьюпорте */
-.vp-image-card {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    
-    /* Высота карточки (можно фиксировать или делать резиновой) */
-    /* Пока сделаем адаптивную высоту, чтобы фото влезали красиво */
-    height: 300px; 
-    position: relative;
-}
-
-.vp-image-card img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain; /* Сохраняем пропорции, не обрезаем */
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    border-radius: 4px;
-}
-
-/* Лейбл с именем файла (опционально, для удобства) */
-.vp-image-label {
-    position: absolute;
-    bottom: 5px;
-    left: 10px;
-    background: rgba(0, 0, 0, 0.6);
-    color: #fff;
-    font-size: 10px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    pointer-events: none;
-    backdrop-filter: blur(4px);
-}
+.drag-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.3s; }
+.drag-overlay.active { opacity: 1; pointer-events: all; }
+.drag-overlay span { border: 2px dashed #444; padding: 40px; border-radius: 20px; font-size: 1.5rem; color: #888; }
